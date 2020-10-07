@@ -6,7 +6,7 @@ using namespace Filter;
 
 int predictSupply = 0;
 Unit workers[100] = {};
-Refinery ref;
+
 int a = 0;
 
 Unit FindWorker(Unit caller) 
@@ -146,7 +146,7 @@ void ExampleAIModule::onFrame()
           } // closure: if idle
           if (u == workers[0]) 
           {
-              TilePositions::Unknown.x
+              //TilePositions::Unknown.x;
           }
 
       }
@@ -250,7 +250,7 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 {
-    army
+    //army
 }
 
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
@@ -299,7 +299,8 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             }
             if (unit->getType() == UnitTypes::Terran_Refinery)
             {
-                
+                Refinery ref;
+
                 ref.refinery = unit;
                 ref.refWorkers[0] = unit->getClosestUnit();
 
