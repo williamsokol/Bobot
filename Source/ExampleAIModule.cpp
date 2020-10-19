@@ -29,7 +29,7 @@ void ExampleAIModule::onStart()
     try
     {
         // Hello World!
-        Broodwar->sendText("test build 1");
+        Broodwar->sendText("test build 2");
 
         // Print the map name.
         // BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
@@ -77,8 +77,10 @@ void ExampleAIModule::onStart()
             //assert(startingLocationsOK);
 
             BWEM::utils::MapPrinter::Initialize(&theMap);
-            BWEM::utils::printMap(theMap);      // will print the map into the file <StarCraftFolder>bwapi-data/map.bmp
-            BWEM::utils::pathExample(theMap);   // add to the printed map a path between two starting locations
+            //BWEM::utils::printMap(theMap);      // will print the map into the file <StarCraftFolder>bwapi-data/map.bmp
+            //BWEM::utils::pathExample(theMap);   // add to the printed map a path between two starting locations
+
+            BWEM::utils::MapDrawer::ProcessCommand("all");  //will disable seeing all of the map stuff
 
             Broodwar << "gg" << std::endl;
         }
