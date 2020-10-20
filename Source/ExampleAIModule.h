@@ -26,14 +26,21 @@ public:
   virtual void onSaveGame(std::string gameName);
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
-  int rackCount = 0;
-  //BWAPI::Unit *Racks;
-  int workerCount = 0;
-  std::deque <BWAPI::Unit> army;
+  BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
+  virtual void CheckBuild();
+
   class Refinery
   {
   public:
 	  BWAPI::Unit refinery;
 	  BWAPI::Unit refWorkers[3];
   };
+
+  int rackCount = 0;
+  //BWAPI::Unit *Racks;
+  int workerCount = 0;
+  int workerGoal = 20;
+  std::deque <BWAPI::Unit> army;
+  Refinery ref;
+  
 };

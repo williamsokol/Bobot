@@ -1,5 +1,6 @@
 #include "ExampleAIModule.h"
 #include <iostream>
+#include <fstream>
 #include "BWEM 1.4.1/src/bwem.h"
 #include <cassert> 
 
@@ -9,20 +10,68 @@ using namespace Filter;
 namespace { auto& theMap = BWEM::Map::Instance(); }
 
 int predictSupply = 0;
-Unit workers[100] = {};
+Unit workers[100];
 
 int a = 0;
 
-Unit FindWorker(Unit caller) 
+
+Unit ExampleAIModule::FindWorker(Unit caller)
 {
-    for (Unit worker : workers) 
+    //Broodwar->sendText("%d", *(&workers + 1) - workers);
+    
+    for (int i=0; i<100;i++)
     {
-        if (!worker->isConstructing() && !worker->isGatheringGas()) 
+        // &&
+        
+        if (workers[i] != NULL && !(workers)[i]->isGatheringGas() && !(workers)[i]->isConstructing())
         {
+            
+            //system("pause");
+            Unit worker = workers[i];
+            workers[i] = NULL;
+            Broodwar->sendText("used workers %d", i );
+
+
             return worker;
+            
         }
     }
-    return NULL;
+    //system("pause");
+    //return NULL;
+}
+
+void ExampleAIModule::CheckBuild() 
+{
+    int currentSupply = Broodwar->self()->supplyUsed() / 2;
+    int totalSupply = (Broodwar->self()->supplyTotal() / 2) + predictSupply;
+
+    Unit worker;
+    //Broodwar->sendText(" neede %f %d %s",1.16*currentSupply,totalSupply, 1.16 * currentSupply>= totalSupply? "true": "false");
+    // all of the scv and building creation, I based it on supply count :)
+    if ((1.16 * currentSupply) >= totalSupply)
+    {
+       
+        worker = FindWorker(NULL);
+        TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Supply_Depot, worker->getTilePosition());
+        worker->build(UnitTypes::Terran_Supply_Depot, buildPosition);
+        Broodwar->sendText(" building needed %s", worker->getTarget()->getType().c_str());
+
+        predictSupply = predictSupply + 8;
+    }
+    else if (currentSupply == 11 || currentSupply == 13)
+    {
+        //Broodwar->sendText(" %s", unit->getType().c_str());
+        worker = FindWorker(NULL);
+        TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Barracks, worker->getTilePosition());
+        worker->build(UnitTypes::Terran_Barracks, buildPosition);
+    }
+    else if (currentSupply == 18)
+    {
+        //Broodwar->sendText(" %s", unit->getType().c_str());
+        worker = FindWorker(NULL);
+        TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Refinery, worker->getTilePosition());
+        worker->build(UnitTypes::Terran_Refinery, buildPosition);
+    }
 }
 void ExampleAIModule::onStart()
 {
@@ -80,9 +129,14 @@ void ExampleAIModule::onStart()
             //BWEM::utils::printMap(theMap);      // will print the map into the file <StarCraftFolder>bwapi-data/map.bmp
             //BWEM::utils::pathExample(theMap);   // add to the printed map a path between two starting locations
 
-            BWEM::utils::MapDrawer::ProcessCommand("all");  //will disable seeing all of the map stuff
+            BWEM::utils::MapDrawer::ProcessCommand("all");  //will disable seeing all of the map stuff on start
 
             Broodwar << "gg" << std::endl;
+
+            std::ofstream file;
+            file.open("cout.txt");
+            std::streambuf* sbuf = std::cout.rdbuf();
+            std::cout.rdbuf(file.rdbuf());
         }
     }
     catch (const std::exception& e)
@@ -127,6 +181,16 @@ void ExampleAIModule::onFrame()
   Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
   Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
 
+  if (ref.refinery) {
+      int i = 0;
+      for (Unit w : ref.refWorkers)
+      {
+          Broodwar->drawTextMap(w->getPosition(), "%c Invis %d", Text::Yellow, i);
+
+          i++;
+      }
+  }
+
   // Return if the game is a replay or is paused
   if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
     return;
@@ -161,9 +225,12 @@ void ExampleAIModule::onFrame()
       // Finally make the unit do some stuff!
 
 
+
       // If the unit is a worker unit
       if (u->getType().isWorker())
       {
+          CheckBuild();
+
           // if our worker is idle
           if (u->isIdle())
           {
@@ -196,15 +263,19 @@ void ExampleAIModule::onFrame()
           {
 
               // Order the depot to construct more workers! But only when it is idle.
-              if (u->isIdle() && !u->train(u->getType().getRace().getWorker()))
+              if (u->isIdle() && workerCount <= workerGoal &&!u->train(u->getType().getRace().getWorker()))
               {
-                  //Broodwar->sendText("oh no");
+                  //Broodwar->sendText("%d", workerCount);
               } // closure: failed to train idle unit
 
           }
-          else if (u->getType() == UnitTypes::Terran_Barracks && !u->isTraining())
+          else if (u->getType() == UnitTypes::Terran_Barracks )
           {
-              u->train(UnitTypes::Terran_Marine);
+              if (u->isIdle() && u->train(UnitTypes::Terran_Marine)) 
+              {
+                  //
+              }
+              
           }
       }
   
@@ -214,6 +285,17 @@ void ExampleAIModule::onFrame()
 void ExampleAIModule::onSendText(std::string text)
 {
     BWEM::utils::MapDrawer::ProcessCommand(text);
+    // number reader
+    if (text[0] >= '0' && text[0] <= '9') 
+    {
+        int num = 0;
+        for (int c : text) 
+        {
+            num = (num * 10) + (c - '0');
+        }
+        Broodwar->setLocalSpeed(num);
+    }
+    
   // Send the text to the game if it is not being processed.
     Broodwar->sendText("%s", text.c_str());
 
@@ -283,7 +365,7 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
       int seconds = Broodwar->getFrameCount()/24;
       int minutes = seconds/60;
       seconds %= 60;
-      Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
+      //Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
     }
   }
 }
@@ -348,54 +430,39 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             }
             if (unit->getType() == UnitTypes::Terran_Refinery)
             {
-                Refinery ref;
+                
 
                 ref.refinery = unit;
                 ref.refWorkers[0] = unit->getClosestUnit();
+                ref.refWorkers[0]->gather(ref.refinery);
 
                 for (int i = 1; i < 3; i++) {
                     ref.refWorkers[i] = FindWorker(ref.refinery);
+
+
+                    if (!ref.refWorkers[i]->isGatheringGas()) 
+                    {
+                        Broodwar->sendText("testing %s", ref.refWorkers[i]);
+                        ref.refWorkers[i]->gather(ref.refinery);
+                    }
+                    
+
                     ref.refWorkers[i]->gather(ref.refinery);
                 }
             }
-        }else if (unit->getType() == UnitTypes::Terran_SCV)
-        {
+        }else{
             
-            
-            // everything up here is garbage 
-            int currentSupply = Broodwar->self()->supplyUsed() / 2;
-            int totalSupply = (Broodwar->self()->supplyTotal() / 2) + predictSupply;
-            
-            workers[workerCount] = unit;
-            workerCount++;
+            if (unit->getType() == UnitTypes::Terran_SCV)
+            {
 
-            // all of the scv and building creation, I based it on supply count :)
-            if ((1.16 * currentSupply) >= totalSupply)
-            {
-                TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Supply_Depot, unit->getTilePosition());
-                unit->build(UnitTypes::Terran_Supply_Depot, buildPosition);
-
-                predictSupply = predictSupply + 8;
+                workers[workerCount] = unit;
+                workerCount++;
             }
-            else if (currentSupply == 11 || currentSupply == 13)
-            {
-                //Broodwar->sendText(" %s", unit->getType().c_str());
-                TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Barracks, unit->getTilePosition());
-                unit->build(UnitTypes::Terran_Barracks, buildPosition);
-            }
-            else if (currentSupply == 18)
-            {
-                //Broodwar->sendText(" %s", unit->getType().c_str());
-                TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Terran_Refinery, unit->getTilePosition());
-                unit->build(UnitTypes::Terran_Refinery, buildPosition);
-            }
-        }else
-        {
             if (unit->getType() == UnitTypes::Terran_Marine) 
             {
                 if (army.empty()) 
                 {
-                    Broodwar->sendText("empty");
+                    //Broodwar->sendText("empty");
                 }
                 Position pos = { Broodwar->mapWidth() * 16,Broodwar->mapHeight() * 16 };
                 Position pos2 = { Broodwar->self()->getStartLocation().x * 32,Broodwar->self()->getStartLocation().y * 32 };
