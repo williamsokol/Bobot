@@ -27,6 +27,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
+  void ExampleAIModule::DoBuilding(BWAPI::UnitType building);
   virtual void CheckBuild();
 
   class Refinery
@@ -40,7 +41,8 @@ public:
   //BWAPI::Unit *Racks;
   int workerCount = 0;
   int workerGoal = 20;
-  std::deque <BWAPI::Unit> army;
+  //Base bases[20];
+  BWAPI::TilePosition mainBase;
   Refinery ref;
   
 };
