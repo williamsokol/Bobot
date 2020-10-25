@@ -19,6 +19,8 @@ Unit workers[100];
 
 TilePosition origin;
 
+const Base* thing;
+
 //int a = 0;
 
 
@@ -47,13 +49,15 @@ Unit ExampleAIModule::FindWorker(Unit caller)
     //return NULL;
 }
 
-void ExampleAIModule::DoBuilding(UnitType building) 
+void ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition)
 {
-    
         Unit worker;
 
         worker = FindWorker(NULL);
-        TilePosition buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
+
+        if (buildPosition.x == NULL) {
+            buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
+        }
         worker->build(building, buildPosition);
         Broodwar->sendText(" new %s", building.c_str());
     
@@ -78,16 +82,20 @@ void ExampleAIModule::CheckBuild()
     else if (currentSupply == 11 || currentSupply == 13 )
     {
         Broodwar << "making a barracks" << std::endl;
-        DoBuilding(UnitTypes::Terran_Barracks);
+        //DoBuilding(UnitTypes::Terran_Barracks);
+        FindWorker(NULL)->move({ thing->Location().x * 32, thing->Location().y * 32 });
     }
     if (currentSupply == 18 )
     {
         Broodwar << "making a Refinery--------------------------------------------------" << std::endl;
-        DoBuilding(UnitTypes::Terran_Refinery);
+        //DoBuilding(UnitTypes::Terran_Refinery);
     }
-    else if (currentSupply == 24) 
+    else if (currentSupply == 17)
     {
-        DoBuilding(UnitTypes::Terran_Factory);
+        DoBuilding(UnitTypes::Terran_Command_Center,thing->Location());
+
+        
+        Broodwar << thing->Location() << std::endl;
     }
 }
 void ExampleAIModule::onStart()
@@ -135,7 +143,10 @@ void ExampleAIModule::onStart()
             if (Broodwar->enemy()) // First make sure there is an enemy
                 Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
 
+            
             mainBase = Broodwar->self()->getStartLocation();
+            Broodwar->sendText("dist = 0 base x=%d y=%d", mainBase.x, mainBase.y);
+
 
             Broodwar << "Map initialization..." << std::endl;
 
@@ -156,7 +167,11 @@ void ExampleAIModule::onStart()
             file.open("cout.txt");
             std::streambuf* sbuf = std::cout.rdbuf();
             std::cout.rdbuf(file.rdbuf());
+
+            //this is stuff for testing down here
+            
         }
+
     }
     catch (const std::exception& e)
     {
@@ -210,39 +225,39 @@ void ExampleAIModule::onFrame()
           i++;
       }
   }
-  /*
-  int thing =  theMap.Areas()[1].Bases()[0].Location().x;
-  Area test = theMap.Areas()[0];
-  Base test1 = test.Bases()[0];
   
-  Broodwar->sendText("%d ", test2.x);
-  //Broodwar->drawTextMap(thing, "%c Invis ", Text::Yellow);
-  TilePosition test2(test1.Location());
-  */
-  int i = 0,a=0;
+  
+  int i = 0, a = 0;
   float bigDist = 100000;
+  //Broodwar->sendText("dist = 0 base x=%d y=%d", mainBase.x, mainBase.y);
+
   for (const Area& area : theMap.Areas())
   {
-      
       for (const Base& base : area.Bases())
       {
           origin = base.Location();
+
+          if ( mainBase == origin)
+              continue;
+          
           WalkPosition size(UnitType(UnitTypes::Terran_Command_Center).tileSize());	// same size for other races
 
-          Broodwar->drawTextMap({ origin.x*32,origin.y*32 }, "%c base number: %d ", Text::Yellow, i++);
-          float dist = sqrt(pow(origin.x - mainBase.x, 2) + pow(origin.x - mainBase.y, 2));
-          if (bigDist > dist) 
+          int dist = sqrt(pow(origin.x - mainBase.x, 2) + pow(origin.y - mainBase.y, 2));
+          Broodwar->drawTextMap({ origin.x * 32,origin.y * 32 }, "%c base number: %d dist=%d", Text::Yellow, i,dist);
+          
+
+          if (bigDist > dist)
           {
               bigDist = dist;
-              Broodwar->sendText("dist %d", dist);
-              //bases[0] = base;
+              //Broodwar->sendText("dist = %d base x=%d y=%d", dist, mainBase.x, mainBase.y);
+              thing=&base;
               a = i;
           }
+          i++;
       }
-      
   }
-  Broodwar->drawTextScreen(200, 40, "picked base num %d", a);
-
+  Broodwar->drawTextScreen(20, 40, "picked base num %d  main=%d,%d", a, mainBase.x, mainBase.y);
+   
   // Return if the game is a replay or is paused
   if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
     return;
@@ -504,6 +519,10 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 
                     ref.refWorkers[i]->gather(ref.refinery);
                 }
+            }
+            if (unit->getType() == UnitTypes::Terran_Factory)
+            {
+                unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }
         }else{
             

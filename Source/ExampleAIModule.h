@@ -1,6 +1,9 @@
 #pragma once
 #include <BWAPI.h>
 
+
+
+
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule
@@ -27,7 +30,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
-  void ExampleAIModule::DoBuilding(BWAPI::UnitType building);
+  void ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {});
   virtual void CheckBuild();
 
   class Refinery
@@ -41,7 +44,8 @@ public:
   //BWAPI::Unit *Racks;
   int workerCount = 0;
   int workerGoal = 20;
-  //Base bases[20];
+  
+  
   BWAPI::TilePosition mainBase;
   Refinery ref;
   
