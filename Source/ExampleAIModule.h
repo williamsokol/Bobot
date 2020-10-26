@@ -30,7 +30,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
-  void ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {});
+  bool ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {}, BWAPI::Unit worker = NULL);
   virtual void CheckBuild();
 
   class Refinery
@@ -44,6 +44,8 @@ public:
   //BWAPI::Unit *Racks;
   int workerCount = 0;
   int workerGoal = 20;
+
+  BWAPI::Unit baseBuilder;
   
   
   BWAPI::TilePosition mainBase;

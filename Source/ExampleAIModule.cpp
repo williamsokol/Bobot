@@ -49,17 +49,19 @@ Unit ExampleAIModule::FindWorker(Unit caller)
     //return NULL;
 }
 
-void ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition)
+bool ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition,Unit worker )
 {
-        Unit worker;
+        
 
-        worker = FindWorker(NULL);
-
+        if (worker == NULL) {
+            worker = FindWorker(NULL);
+        }
         if (buildPosition.x == NULL) {
             buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
         }
-        worker->build(building, buildPosition);
+
         Broodwar->sendText(" new %s", building.c_str());
+        return (worker->build(building, buildPosition));
     
 }
 
@@ -79,24 +81,27 @@ void ExampleAIModule::CheckBuild()
 
         predictSupply = predictSupply +8;
     }
-    else if (currentSupply == 11 || currentSupply == 13 )
+    else if (currentSupply == 11  )
     {
         Broodwar << "making a barracks" << std::endl;
-        //DoBuilding(UnitTypes::Terran_Barracks);
-        FindWorker(NULL)->move({ thing->Location().x * 32, thing->Location().y * 32 });
+        DoBuilding(UnitTypes::Terran_Barracks);
     }
-    if (currentSupply == 18 )
+    if (currentSupply == 17)
+    {
+        baseBuilder = FindWorker(NULL);
+        baseBuilder->move({ thing->Location().x * 32, thing->Location().y * 32 });
+
+        Broodwar << thing->Location() << std::endl;
+    }else if (currentSupply == 18 )
     {
         Broodwar << "making a Refinery--------------------------------------------------" << std::endl;
-        //DoBuilding(UnitTypes::Terran_Refinery);
+        DoBuilding(UnitTypes::Terran_Refinery);
     }
-    else if (currentSupply == 17)
+    else if (currentSupply == 20) 
     {
-        DoBuilding(UnitTypes::Terran_Command_Center,thing->Location());
-
-        
-        Broodwar << thing->Location() << std::endl;
+        DoBuilding(UnitTypes::Terran_Factory);
     }
+    
 }
 void ExampleAIModule::onStart()
 {
@@ -296,10 +301,16 @@ void ExampleAIModule::onFrame()
       // If the unit is a worker unit
       if (u->getType().isWorker())
       {
-          
-
-          // if our worker is idle
-          if (u->isIdle())
+          if (u == baseBuilder) 
+          {
+              //Broodwar->sendText("done: %s", u->getTilePosition() == thing->Location() ? "true" : "false");
+              if (u->isIdle() )
+              {
+                  DoBuilding(UnitTypes::Terran_Command_Center, thing->Location(),baseBuilder);
+                  //Broodwar->sendText("done: %s", DoBuilding(UnitTypes::Terran_Command_Center, thing->Location())? "true":"false");
+                  baseBuilder = NULL;
+              }
+          }else if (u->isIdle())
           {
               // Order workers carrying a resource to return them to the center,
               // otherwise find a mineral patch to harvest.
