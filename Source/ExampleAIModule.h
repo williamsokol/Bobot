@@ -39,12 +39,20 @@ public:
 	  BWAPI::Unit refinery;
 	  BWAPI::Unit refWorkers[3];
   };
+  struct PreUnit 
+  {
+	  bool valid = false;
+	  BWAPI::UnitType unit;
+	  BWAPI::Position pos;
+
+  };
 
   int rackCount = 0;
   //BWAPI::Unit *Racks;
   int workerCount = 0;
   int workerGoal = 20;
-
+  
+  std::vector<PreUnit> unitQueue;
   BWAPI::Unit baseBuilder;
   
   

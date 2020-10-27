@@ -71,13 +71,15 @@ void ExampleAIModule::CheckBuild()
     int totalSupply = (Broodwar->self()->supplyTotal() / 2) + predictSupply;
 
     
-
+    PreUnit building;
     //Broodwar->sendText(" neede %f %d %s",1.16*currentSupply,totalSupply, 1.16 * currentSupply>= totalSupply? "true": "false");
     // all of the scv and building creation, I based it on supply count :)
     if ((1.16 * currentSupply) >= totalSupply && Broodwar->self()->minerals() >= UnitTypes::Terran_Supply_Depot.mineralPrice())
     {
-        DoBuilding(UnitTypes::Terran_Supply_Depot);
-        //Broodwar->sendText(" supply depot %s", worker->getTarget()->getType().c_str());
+        building.valid = true;
+        building.unit = UnitTypes::Terran_Supply_Depot;
+        //DoBuilding(UnitTypes::Terran_Supply_Depot);
+        
 
         predictSupply = predictSupply +8;
     }
@@ -97,11 +99,16 @@ void ExampleAIModule::CheckBuild()
         Broodwar << "making a Refinery--------------------------------------------------" << std::endl;
         DoBuilding(UnitTypes::Terran_Refinery);
     }
-    else if (currentSupply == 20) 
+    else if (currentSupply == 20    ) 
     {
         DoBuilding(UnitTypes::Terran_Factory);
     }
-    
+    if (building.valid) 
+    {
+        Broodwar->sendText(" supply depot %s", building.valid ? "true" : "false");
+        unitQueue.push_back(building);
+    }
+   
 }
 void ExampleAIModule::onStart()
 {
@@ -272,6 +279,19 @@ void ExampleAIModule::onFrame()
   if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
     return;
 
+
+  // builds the base
+    if (unitQueue.size() >= 1)
+    {
+            TilePosition go(unitQueue[0].pos);
+            DoBuilding(unitQueue[0].unit, go);
+            unitQueue.erase(unitQueue.begin());
+            Broodwar->sendText("all done!");
+    }else {
+        
+        
+    }
+
   // Iterate through all the units that we own
   for (auto& u : Broodwar->self()->getUnits())
   {
@@ -355,6 +375,12 @@ void ExampleAIModule::onFrame()
                   //
               }
               
+          }else if (u->getType() == UnitTypes::Terran_Factory)
+          {
+              if(u->isIdle() && u->getAddon() &&u->train(UnitTypes::Terran_Siege_Tank_Tank_Mode))
+              {
+                  //
+              }
           }
       }
   
