@@ -51,17 +51,18 @@ Unit ExampleAIModule::FindWorker(Unit caller)
 
 bool ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition,Unit worker )
 {
-        
+    if (building.isAddon()) {
+        return worker->buildAddon(building);
+    }
+    if (worker == NULL) {
+        worker = FindWorker(NULL);
+    }
+    if (buildPosition.x == NULL) {
+        buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
+    }
 
-        if (worker == NULL) {
-            worker = FindWorker(NULL);
-        }
-        if (buildPosition.x == NULL) {
-            buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
-        }
-
-        Broodwar->sendText(" new %s", building.c_str());
-        return (worker->build(building, buildPosition));
+    //Broodwar->sendText(" new %s", building.c_str());
+    return (worker->build(building, buildPosition));
     
 }
 
@@ -86,7 +87,9 @@ void ExampleAIModule::CheckBuild()
     else if (currentSupply == 11  )
     {
         Broodwar << "making a barracks" << std::endl;
-        DoBuilding(UnitTypes::Terran_Barracks);
+        building.valid = true;
+        building.unit = UnitTypes::Terran_Barracks;
+        //DoBuilding(UnitTypes::Terran_Barracks);
     }
     if (currentSupply == 17)
     {
@@ -97,15 +100,20 @@ void ExampleAIModule::CheckBuild()
     }else if (currentSupply == 18 )
     {
         Broodwar << "making a Refinery--------------------------------------------------" << std::endl;
-        DoBuilding(UnitTypes::Terran_Refinery);
+        building.valid = true;
+        building.unit = (UnitTypes::Terran_Refinery);
+        //DoBuilding(UnitTypes::Terran_Refinery);
     }
     else if (currentSupply == 20    ) 
     {
-        DoBuilding(UnitTypes::Terran_Factory);
+        Broodwar->sendText("making factory");
+        building.valid = true;
+        building.unit = (UnitTypes::Terran_Factory);
+        
     }
     if (building.valid) 
     {
-        Broodwar->sendText(" supply depot %s", building.valid ? "true" : "false");
+        //Broodwar->sendText(" supply depot %s", building.valid ? "true" : "false");
         unitQueue.push_back(building);
     }
    
@@ -225,8 +233,14 @@ void ExampleAIModule::onFrame()
     int minutes = seconds / 60;
     seconds %= 60;
     Broodwar->drawTextScreen(20,20,"time %.2d:%.2d", minutes, seconds);
-  Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
-  Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
+    for (int i = 0; i < unitQueue.size(); i++) 
+    {
+        Broodwar->drawTextScreen(20, i*10+60, "will make: %s onit? %s",
+            unitQueue[i].unit.c_str(),
+            unitQueue[i].builder != NULL? "true":"false");
+    }
+    Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
+    Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
 
   if (ref.refinery) {
       int i = 0;
@@ -283,10 +297,18 @@ void ExampleAIModule::onFrame()
   // builds the base
     if (unitQueue.size() >= 1)
     {
-            TilePosition go(unitQueue[0].pos);
-            DoBuilding(unitQueue[0].unit, go);
-            unitQueue.erase(unitQueue.begin());
+        TilePosition go(unitQueue[0].pos);
+        if (unitQueue[0].builder == NULL) 
+        {
+            unitQueue[0].builder = FindWorker(NULL);
+        }
+        if (!unitQueue[0].builder->isConstructing())
+        {
+            DoBuilding(unitQueue[0].unit, go, unitQueue[0].builder);
             Broodwar->sendText("all done!");
+        }
+       
+        
     }else {
         
         
@@ -390,7 +412,11 @@ void ExampleAIModule::onFrame()
 
 void ExampleAIModule::onSendText(std::string text)
 {
+    Broodwar->sendText("%s", text.c_str());
+
     BWEM::utils::MapDrawer::ProcessCommand(text);
+    //exits to surrender screen (can compile from there)
+    if (text == "done") { Broodwar->leaveGame(); }
     // number reader
     if (text[0] >= '0' && text[0] <= '9') 
     {
@@ -403,7 +429,7 @@ void ExampleAIModule::onSendText(std::string text)
     }
     
   // Send the text to the game if it is not being processed.
-    Broodwar->sendText("%s", text.c_str());
+    
 
 
   // Make sure to use %s and pass the text as a parameter,
@@ -460,7 +486,17 @@ void ExampleAIModule::onUnitHide(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
 {
-    
+    if (unit->getPlayer() == Broodwar->self()) {
+        
+        if (unitQueue.size() > 0) {
+            if (unit->getType() == unitQueue[0].unit)
+            {
+                Broodwar->sendText(unit->getType().c_str());
+                unitQueue.erase(unitQueue.begin());
+            }
+        }
+    }
+       
 
 
   if ( Broodwar->isReplay() )
@@ -492,6 +528,17 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
 {
+    if (unit->getPlayer() == Broodwar->self()) {
+
+        if (unitQueue.size() > 0) {
+            if (unit->getType() == unitQueue[0].unit)
+            {
+                Broodwar->sendText(unit->getType().c_str());
+                unitQueue.erase(unitQueue.begin());
+            }
+        }
+    }
+
   if ( Broodwar->isReplay() )
   {
     // if we are in a replay, then we will print out the build order of the structures
@@ -519,7 +566,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
     
     if (unit->getPlayer() == Broodwar->self())
     {
-        CheckBuild();
+        
         // Check If Buildings Are Created
         if (unit->getType().isBuilding())
         {
@@ -531,7 +578,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             }
             if (unit->getType() == UnitTypes::Terran_Barracks) 
             {
-                Broodwar->sendText("new barracks %s", unit->getType().c_str());
+                //Broodwar->sendText("new barracks %s", unit->getType().c_str());
                
                
             }
@@ -559,10 +606,14 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             }
             if (unit->getType() == UnitTypes::Terran_Factory)
             {
-                unit->buildAddon(UnitTypes::Terran_Machine_Shop);
+                PreUnit machineShop;
+                machineShop.builder = unit;
+                machineShop.unit = UnitTypes::Terran_Machine_Shop;
+                unitQueue.push_back(machineShop);
+                //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }
         }else{
-            
+            CheckBuild();
             if (unit->getType() == UnitTypes::Terran_SCV)
             {
 

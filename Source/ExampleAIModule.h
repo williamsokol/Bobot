@@ -43,6 +43,7 @@ public:
   {
 	  bool valid = false;
 	  BWAPI::UnitType unit;
+	  BWAPI::Unit builder;
 	  BWAPI::Position pos;
 
   };
