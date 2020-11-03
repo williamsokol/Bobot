@@ -1,10 +1,16 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  ExampleAIModule.cpp
+C:\libraries\BWAPI\ExampleAIModule\Source\ExampleAIModule.cpp(206): warning C4101: 'e': unreferenced local variable
+C:\libraries\BWAPI\ExampleAIModule\Source\ExampleAIModule.cpp(246): warning C4018: '<': signed/unsigned mismatch
+C:\libraries\BWAPI\ExampleAIModule\Source\ExampleAIModule.cpp(281): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\libraries\BWAPI\ExampleAIModule\Source\ExampleAIModule.cpp(287): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\libraries\BWAPI\ExampleAIModule\Source\ExampleAIModule.cpp(546): warning C4018: '<': signed/unsigned mismatch
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
      Creating library Release\ExampleAIModule.lib and object Release\ExampleAIModule.exp
   Generating code
-  9 of 6017 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+  1 of 6070 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    12 functions had inline decision re-evaluated but remain unchanged
+    11 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   ExampleAIModule.vcxproj -> C:\libraries\BWAPI\ExampleAIModule\..\..\..\Users\PSokol\Desktop\Starcraft_1161\bwapi-data\AI\ExampleAIModule.dll

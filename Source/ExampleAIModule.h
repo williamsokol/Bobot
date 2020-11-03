@@ -32,6 +32,7 @@ public:
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
   bool ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {}, BWAPI::Unit worker = NULL);
   virtual void CheckBuild();
+  //virtual void Attack(BWAPI::Position pos, std::vector<BWAPI::Unit> squad);
 
   class Refinery
   {
@@ -47,14 +48,18 @@ public:
 	  BWAPI::Position pos;
 
   };
-
+  
   int rackCount = 0;
   //BWAPI::Unit *Racks;
   int workerCount = 0;
   int workerGoal = 20;
   
+ 
+
   std::vector<PreUnit> unitQueue;
   BWAPI::Unit baseBuilder;
+  BWAPI::Unit scanner;
+
   
   
   BWAPI::TilePosition mainBase;

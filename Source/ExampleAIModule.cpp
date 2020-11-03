@@ -20,7 +20,8 @@ Unit workers[100];
 TilePosition origin;
 
 const Base* thing;
-
+std::vector<Unit> army;
+bool attacking = false;
 //int a = 0;
 
 
@@ -38,7 +39,7 @@ Unit ExampleAIModule::FindWorker(Unit caller)
             //system("pause");
             Unit worker = workers[i];
             workers[i] = NULL;
-            Broodwar->sendText("used workers %d", i );
+            //Broodwar->sendText("used workers %d", i );
             
 
             return worker;
@@ -91,6 +92,13 @@ void ExampleAIModule::CheckBuild()
         building.unit = UnitTypes::Terran_Barracks;
         //DoBuilding(UnitTypes::Terran_Barracks);
     }
+    else if (currentSupply == 12)
+    {
+        Broodwar << "making an academy " << std::endl;
+        building.valid = true;
+        building.unit = UnitTypes::Terran_Academy;
+        //DoBuilding(UnitTypes::Terran_Barracks);
+    }
     if (currentSupply == 17)
     {
         baseBuilder = FindWorker(NULL);
@@ -104,7 +112,7 @@ void ExampleAIModule::CheckBuild()
         building.unit = (UnitTypes::Terran_Refinery);
         //DoBuilding(UnitTypes::Terran_Refinery);
     }
-    else if (currentSupply == 20    ) 
+    else if (currentSupply == 20 || currentSupply == 22 ) 
     {
         Broodwar->sendText("making factory");
         building.valid = true;
@@ -118,8 +126,10 @@ void ExampleAIModule::CheckBuild()
     }
    
 }
+
 void ExampleAIModule::onStart()
 {
+    
     try
     {
         // Hello World!
@@ -133,7 +143,7 @@ void ExampleAIModule::onStart()
         Broodwar->enableFlag(Flag::UserInput);
         Broodwar->setLocalSpeed(5);
         // Uncomment the following line and the bot will know about everything through the fog of war (cheat).
-        //Broodwar->enableFlag(Flag::CompleteMapInformation);
+        Broodwar->enableFlag(Flag::CompleteMapInformation);
 
         // Set the command optimization level so that common commands can be grouped
         // and reduce the bot's APM (Actions Per Minute).
@@ -302,7 +312,7 @@ void ExampleAIModule::onFrame()
         {
             unitQueue[0].builder = FindWorker(NULL);
         }
-        if (!unitQueue[0].builder->isConstructing())
+        if (!unitQueue[0].builder->isConstructing() && Broodwar->canMake(unitQueue[0].unit))
         {
             DoBuilding(unitQueue[0].unit, go, unitQueue[0].builder);
             Broodwar->sendText("all done!");
@@ -313,6 +323,8 @@ void ExampleAIModule::onFrame()
         
         
     }
+  // look at enemy stuff too
+   
 
   // Iterate through all the units that we own
   for (auto& u : Broodwar->self()->getUnits())
@@ -404,6 +416,21 @@ void ExampleAIModule::onFrame()
                   //
               }
           }
+          else if (u->getType() == UnitTypes::Terran_Comsat_Station) 
+          {
+              Unit enemy = u->getClosestUnit(Filter::IsEnemy && !IsVisible);
+              if(scanner != NULL && enemy != NULL)
+                  scanner->useTech(TechTypes::Scanner_Sweep, enemy->getPosition());
+          }
+      }
+      else {
+          if (u->isIdle() && attacking)
+          {
+              Unit enemy = u->getClosestUnit(Filter::IsEnemy);
+              if (enemy != NULL) {
+                  u->attack(enemy->getPosition());
+              }
+          }
       }
   
   } // closure: unit iterator
@@ -470,6 +497,8 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
 
 void ExampleAIModule::onUnitDiscover(BWAPI::Unit unit)
 {
+    
+   
 }
 
 void ExampleAIModule::onUnitEvade(BWAPI::Unit unit)
@@ -514,7 +543,15 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 {
-    //army
+    for (int i = 0; i < army.size(); i++) 
+    {
+        if (unit == army[i]) 
+        {
+            army.erase(army.begin() + i);
+        }
+    }
+    
+        
     try
     {
         if (unit->getType().isMineralField())    theMap.OnMineralDestroyed(unit);
@@ -596,7 +633,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 
                     if (!ref.refWorkers[i]->isGatheringGas()) 
                     {
-                        Broodwar->sendText("testing %s", ref.refWorkers[i]);
+                        //Broodwar->sendText("testing %s", ref.refWorkers[i]);
                         ref.refWorkers[i]->gather(ref.refinery);
                     }
                     
@@ -604,6 +641,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
                     ref.refWorkers[i]->gather(ref.refinery);
                 }
             }
+            if (unit->getType() == UnitTypes::Terran_Comsat_Station) { scanner = unit;}
             if (unit->getType() == UnitTypes::Terran_Factory)
             {
                 PreUnit machineShop;
@@ -612,25 +650,66 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
                 unitQueue.push_back(machineShop);
                 //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }
+            if ( unit->getType() == UnitTypes::Terran_Academy )
+            {
+                PreUnit comsat;
+                for (auto& u : Broodwar->self()->getUnits()) 
+                {
+                    if (u->getType() == UnitTypes::Terran_Command_Center) 
+                    {
+                        comsat.builder = u;
+                        break;
+                    }
+                }
+                comsat.unit = UnitTypes::Terran_Comsat_Station;
+                unitQueue.push_back(comsat);
+                //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
+            }
         }else{
             CheckBuild();
+            
             if (unit->getType() == UnitTypes::Terran_SCV)
             {
 
                 workers[workerCount] = unit;
                 workerCount++;
             }
-            if (unit->getType() == UnitTypes::Terran_Marine) 
+            else
             {
-                
                 Position pos = { Broodwar->mapWidth() * 16,Broodwar->mapHeight() * 16 };
                 Position pos2 = { Broodwar->self()->getStartLocation().x * 32,Broodwar->self()->getStartLocation().y * 32 };
                 Position pos3 = { (pos.x + pos2.x) / 2,(pos.y + pos2.y) / 2 };
 
-                unit->move(pos3);
-                //Broodwar->sendText("x:%d y:%d", pos3.x, pos3.y);
+                army.push_back(unit);
+                if (army.size() >= 25)
+                {
+                    if (attacking != true){
+                        Broodwar->sendText("this is a army size: %d", army.size());
+                        attacking = true;
+                    }
+                }
+                else { 
+                    Broodwar->sendText("this is attacking: %s", attacking? "true" : "false");
+                    attacking = false;
+                }
+                
+
+                if (unit->getType() == UnitTypes::Terran_Marine)
+                {
+
+
+
+                    unit->move(pos3);
+                    //Broodwar->sendText("x:%d y:%d", pos3.x, pos3.y);
+                }
+                if (unit->getType() == UnitTypes::Terran_Siege_Tank_Tank_Mode)
+                {
+
+                   
+                    unit->move(pos3);
+                    //Broodwar->sendText("x:%d y:%d", pos3.x, pos3.y);
+                }
             }
-            
         }
     }
 }
