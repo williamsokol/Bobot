@@ -46,7 +46,7 @@
     <OutDir>..\..\..\Users\PSokol\Desktop\Starcraft_1161\bwapi-data\AI</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\..\Users\PSokol\Desktop\Starcraft_1161\bwapi-data\AI</OutDir>
+    <OutDir>.\Release</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

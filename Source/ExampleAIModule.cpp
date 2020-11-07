@@ -416,11 +416,14 @@ void ExampleAIModule::onFrame()
                   //
               }
           }
-          else if (u->getType() == UnitTypes::Terran_Comsat_Station) 
+          else if (u->getType() == UnitTypes::Terran_Comsat_Station)
           {
-              Unit enemy = u->getClosestUnit(Filter::IsEnemy && !IsVisible);
-              if(scanner != NULL && enemy != NULL)
-                  scanner->useTech(TechTypes::Scanner_Sweep, enemy->getPosition());
+              Unit enemy = u->getClosestUnit(Filter::IsEnemy && IsVisible && !IsDetected);
+              if (scanner != NULL && enemy != NULL) {
+                  if(enemy->isAttacking())
+                      scanner->useTech(TechTypes::Scanner_Sweep, enemy->getPosition());
+
+              }
           }
       }
       else {
