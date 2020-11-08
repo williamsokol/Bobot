@@ -1,5 +1,6 @@
 #pragma once
 #include <BWAPI.h>
+#include "BWEM 1.4.1/src/bwem.h"
 
 
 
@@ -31,7 +32,7 @@ public:
   // Everything below this line is safe to modify.
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
   bool ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {}, BWAPI::Unit worker = NULL);
-  virtual void CheckBuild();
+  
   //virtual void Attack(BWAPI::Position pos, std::vector<BWAPI::Unit> squad);
 
   class Refinery
@@ -44,7 +45,7 @@ public:
   {
 	  bool valid = false;
 	  BWAPI::UnitType unit;
-	  BWAPI::Unit builder;
+	  BWAPI::Unit builder = NULL;
 	  BWAPI::Position pos;
 
   };
@@ -54,7 +55,7 @@ public:
   int workerCount = 0;
   int workerGoal = 20;
   
- 
+  int predictSupply = 0;
 
   std::vector<PreUnit> unitQueue;
   BWAPI::Unit baseBuilder;

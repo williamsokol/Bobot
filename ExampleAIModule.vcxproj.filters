@@ -57,6 +57,12 @@
     <ClCompile Include="Source\BWEM 1.4.1\EasyBMP_1.06\EasyBMP.cpp">
       <Filter>BWEM</Filter>
     </ClCompile>
+    <ClCompile Include="Source\BuildQueue.cpp">
+      <Filter>Bobot bits</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\UI.cpp">
+      <Filter>Bobot bits</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExampleAIModule.h" />
@@ -117,10 +123,19 @@
     <ClInclude Include="Source\BWEM 1.4.1\EasyBMP_1.06\EasyBMP.h">
       <Filter>BWEM</Filter>
     </ClInclude>
+    <ClInclude Include="Source\BuildQueue.h">
+      <Filter>Bobot bits</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\UI.h">
+      <Filter>Bobot bits</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="BWEM">
       <UniqueIdentifier>{d9a12af2-d693-46cc-a3e4-eed58bb78512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bobot bits">
+      <UniqueIdentifier>{99e686cb-6202-4b12-965b-48adea424051}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

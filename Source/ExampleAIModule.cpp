@@ -1,7 +1,7 @@
 #include "ExampleAIModule.h"
 #include <iostream>
 #include <fstream>
-#include "BWEM 1.4.1/src/bwem.h"
+#include "BuildQueue.h"
 #include <cassert>
 #include <cmath>
 
@@ -14,7 +14,7 @@ using namespace BWEM::BWAPI_ext;
 //using namespace BWEM::utils;
 namespace { auto& theMap = BWEM::Map::Instance(); }
 
-int predictSupply = 0;
+
 Unit workers[100];
 
 TilePosition origin;
@@ -67,65 +67,7 @@ bool ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition,U
     
 }
 
-void ExampleAIModule::CheckBuild() 
-{
-    int currentSupply = Broodwar->self()->supplyUsed() / 2;
-    int totalSupply = (Broodwar->self()->supplyTotal() / 2) + predictSupply;
 
-    
-    PreUnit building;
-    //Broodwar->sendText(" neede %f %d %s",1.16*currentSupply,totalSupply, 1.16 * currentSupply>= totalSupply? "true": "false");
-    // all of the scv and building creation, I based it on supply count :)
-    if ((1.16 * currentSupply) >= totalSupply && Broodwar->self()->minerals() >= UnitTypes::Terran_Supply_Depot.mineralPrice())
-    {
-        building.valid = true;
-        building.unit = UnitTypes::Terran_Supply_Depot;
-        //DoBuilding(UnitTypes::Terran_Supply_Depot);
-        
-
-        predictSupply = predictSupply +8;
-    }
-    else if (currentSupply == 11  )
-    {
-        Broodwar << "making a barracks" << std::endl;
-        building.valid = true;
-        building.unit = UnitTypes::Terran_Barracks;
-        //DoBuilding(UnitTypes::Terran_Barracks);
-    }
-    else if (currentSupply == 12)
-    {
-        Broodwar << "making an academy " << std::endl;
-        building.valid = true;
-        building.unit = UnitTypes::Terran_Academy;
-        //DoBuilding(UnitTypes::Terran_Barracks);
-    }
-    if (currentSupply == 17)
-    {
-        baseBuilder = FindWorker(NULL);
-        baseBuilder->move({ thing->Location().x * 32, thing->Location().y * 32 });
-
-        Broodwar << thing->Location() << std::endl;
-    }else if (currentSupply == 18 )
-    {
-        Broodwar << "making a Refinery--------------------------------------------------" << std::endl;
-        building.valid = true;
-        building.unit = (UnitTypes::Terran_Refinery);
-        //DoBuilding(UnitTypes::Terran_Refinery);
-    }
-    else if (currentSupply == 20 || currentSupply == 22 ) 
-    {
-        Broodwar->sendText("making factory");
-        building.valid = true;
-        building.unit = (UnitTypes::Terran_Factory);
-        
-    }
-    if (building.valid) 
-    {
-        //Broodwar->sendText(" supply depot %s", building.valid ? "true" : "false");
-        unitQueue.push_back(building);
-    }
-   
-}
 
 void ExampleAIModule::onStart()
 {
@@ -307,13 +249,20 @@ void ExampleAIModule::onFrame()
   // builds the base
     if (unitQueue.size() >= 1)
     {
+        
         TilePosition go(unitQueue[0].pos);
         if (unitQueue[0].builder == NULL) 
         {
+            
+
             unitQueue[0].builder = FindWorker(NULL);
         }
+        
+      
+        
         if (!unitQueue[0].builder->isConstructing() && Broodwar->canMake(unitQueue[0].unit))
         {
+            
             DoBuilding(unitQueue[0].unit, go, unitQueue[0].builder);
             Broodwar->sendText("all done!");
         }
@@ -669,7 +618,10 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
                 //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }
         }else{
-            CheckBuild();
+            
+            BuildQueue buildQueue(this); 
+            //Broodwar->sendText("this is the unit!!!!!!!!!!!!%s", unit->getType().c_str());
+            buildQueue.CheckBuild(unit,thing);
             
             if (unit->getType() == UnitTypes::Terran_SCV)
             {
