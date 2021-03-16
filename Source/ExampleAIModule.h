@@ -1,7 +1,11 @@
 #pragma once
 #include <BWAPI.h>
 #include "BWEM 1.4.1/src/bwem.h"
-
+#include <iostream>
+#include <fstream>
+#include <cassert>
+#include <cmath>
+#include "internalResources.h"
 
 
 
@@ -46,7 +50,8 @@ public:
 	  bool valid = false;
 	  BWAPI::UnitType unit;
 	  BWAPI::Unit builder = NULL;
-	  BWAPI::Position pos;
+	  BWAPI::TilePosition pos = { -1,-1 };
+	  
 
   };
   
@@ -61,7 +66,7 @@ public:
   BWAPI::Unit baseBuilder;
   BWAPI::Unit scanner;
 
-  
+  std::vector<Unit> workers;
   
   BWAPI::TilePosition mainBase;
   Refinery ref;

@@ -1,5 +1,32 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  BuildQueue.cpp
+  EasyBMP.cpp
+  area.cpp
+  base.cpp
+  bwapiExt.cpp
+  bwem.cpp
+  cp.cpp
+  examples.cpp
+  exampleWall.cpp
+  graph.cpp
+  gridMap.cpp
+  map.cpp
+  mapDrawer.cpp
+  mapImpl.cpp
+  mapPrinter.cpp
+  neutral.cpp
+  tiles.cpp
+  utils.cpp
+  winutils.cpp
   Dll.cpp
   ExampleAIModule.cpp
+  UI.cpp
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(148): warning C4101: 'e': unreferenced local variable
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(188): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(223): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(229): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(498): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(51): warning C4715: 'ExampleAIModule::FindWorker': not all control paths return a value
      Creating library Debug\ExampleAIModule.lib and object Debug\ExampleAIModule.exp
-  ExampleAIModule.vcxproj -> C:\libraries\BWAPI\Debug\ExampleAIModule.dll
+  ExampleAIModule.vcxproj -> C:\Users\william\BWAPI\Bobot\.\Release\ExampleAIModule.dll

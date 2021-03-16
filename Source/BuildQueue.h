@@ -1,4 +1,5 @@
 #include "ExampleAIModule.h"
+#include "internalResources.h"
 #include <BWAPI.h>
 
 

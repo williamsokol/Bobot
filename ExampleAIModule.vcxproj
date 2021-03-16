@@ -15,6 +15,7 @@
     <RootNamespace>ExampleAIModule</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <ProjectName>Bobot</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -43,7 +44,7 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\..\Users\PSokol\Desktop\Starcraft_1161\bwapi-data\AI</OutDir>
+    <OutDir>.\Release</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release</OutDir>
@@ -97,6 +98,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\internalResources.cpp" />
     <ClCompile Include="Source\BuildQueue.cpp" />
     <ClCompile Include="Source\BWEM 1.4.1\EasyBMP_1.06\EasyBMP.cpp" />
     <ClCompile Include="Source\BWEM 1.4.1\src\area.cpp" />
@@ -121,6 +123,7 @@
     <ClCompile Include="Source\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\internalResources.h" />
     <ClInclude Include="Source\BuildQueue.h" />
     <ClInclude Include="Source\BWEM 1.4.1\EasyBMP_1.06\EasyBMP.h" />
     <ClInclude Include="Source\BWEM 1.4.1\src\area.h" />

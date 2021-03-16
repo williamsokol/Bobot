@@ -1,9 +1,7 @@
 #include "ExampleAIModule.h"
-#include <iostream>
-#include <fstream>
 #include "BuildQueue.h"
-#include <cassert>
-#include <cmath>
+#include "UI.h"
+
 
 using namespace BWAPI;
 using namespace Filter;
@@ -15,21 +13,23 @@ using namespace BWEM::BWAPI_ext;
 namespace { auto& theMap = BWEM::Map::Instance(); }
 
 
-Unit workers[100];
+
 
 TilePosition origin;
 
 const Base* thing;
 std::vector<Unit> army;
 bool attacking = false;
-//int a = 0;
+
+BuildQueue* buildQueue;
+UI* ui;
 
 
 Unit ExampleAIModule::FindWorker(Unit caller)
 {
     //Broodwar->sendText("%d", *(&workers + 1) - workers);
     
-    for (int i=0; i<100;i++)
+    for (int i=0; i<workers.size();i++)
     {
         // &&
         
@@ -58,7 +58,7 @@ bool ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition,U
     if (worker == NULL) {
         worker = FindWorker(NULL);
     }
-    if (buildPosition.x == NULL) {
+    if (!buildPosition.isValid()) {
         buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
     }
 
@@ -75,7 +75,7 @@ void ExampleAIModule::onStart()
     try
     {
         // Hello World!
-        Broodwar->sendText("test build 2");
+        Broodwar->sendText("test build 4");
 
         // Print the map name.
         // BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
@@ -143,12 +143,15 @@ void ExampleAIModule::onStart()
             //this is stuff for testing down here
             
         }
+        
 
     }
     catch (const std::exception& e)
     {
        // Broodwar << "EXCEPTION: " << e.what() << std::endl;
     }
+    buildQueue = new BuildQueue(this);
+    ui = new UI(this);
 }
 
 void ExampleAIModule::onEnd(bool isWinner)
@@ -163,47 +166,8 @@ void ExampleAIModule::onEnd(bool isWinner)
 void ExampleAIModule::onFrame()
 {
     
-    try
-    {
-        //BWEM::utils::gridMapExample(theMap);
-        BWEM::utils::drawMap(theMap);
-
-        // Display the game frame rate as text in the upper left area of the screen
-        Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
-        Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS());
-
-        // ...
-    }
-    catch (const std::exception& e)
-    {
-        Broodwar << "EXCEPTION: " << e.what() << std::endl;
-    }
-  // Called once every game frame
-
-  // Display the game frame rate as text in the upper left area of the screen
-    int seconds = Broodwar->getFrameCount() / 24;
-    int minutes = seconds / 60;
-    seconds %= 60;
-    Broodwar->drawTextScreen(20,20,"time %.2d:%.2d", minutes, seconds);
-    for (int i = 0; i < unitQueue.size(); i++) 
-    {
-        Broodwar->drawTextScreen(20, i*10+60, "will make: %s onit? %s",
-            unitQueue[i].unit.c_str(),
-            unitQueue[i].builder != NULL? "true":"false");
-    }
-    Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
-    Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
-
-  if (ref.refinery) {
-      int i = 0;
-      for (Unit w : ref.refWorkers)
-      {
-          Broodwar->drawTextMap(w->getPosition(), "%c Invis %d", Text::Yellow, i);
-          
-          i++;
-      }
-  }
-  
+   
+    ui->Display();
   
   int i = 0, a = 0;
   float bigDist = 100000;
@@ -213,6 +177,7 @@ void ExampleAIModule::onFrame()
   {
       for (const Base& base : area.Bases())
       {
+          
           origin = base.Location();
 
           if ( mainBase == origin)
@@ -233,7 +198,18 @@ void ExampleAIModule::onFrame()
           }
           i++;
       }
+
+      for (const ChokePoint* chokePoint : area.ChokePoints()) {
+          Broodwar->drawTextMap({ chokePoint->Center().x * 8,chokePoint->Center().y * 8 }, "%c ChokePoint", Text::Yellow, i);
+      }
+      
+
   }
+  // calculate closest chokepoint
+  int nearestArea;
+  //const ChokePoint *chokePoint = theMap.Areas()[0].ChokePoints()[0];//[0].ChokePointsByArea().begin();
+  //Broodwar->drawTextMap({ chokePoint->Center().x * 8,chokePoint->Center().y * 8 }, "%c ChokePoint", Text::Yellow, i);
+
   Broodwar->drawTextScreen(20, 40, "picked base num %d  main=%d,%d", a, mainBase.x, mainBase.y);
    
   // Return if the game is a replay or is paused
@@ -245,34 +221,38 @@ void ExampleAIModule::onFrame()
   if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
     return;
 
-
+ 
   // builds the base
-    if (unitQueue.size() >= 1)
-    {
-        
-        TilePosition go(unitQueue[0].pos);
-        if (unitQueue[0].builder == NULL) 
-        {
-            
-
-            unitQueue[0].builder = FindWorker(NULL);
-        }
-        
+  if (unitQueue.size() >= 1 && Broodwar->getFrameCount() % 10 == 0)
+  {
       
-        
-        if (!unitQueue[0].builder->isConstructing() && Broodwar->canMake(unitQueue[0].unit))
-        {
-            
-            DoBuilding(unitQueue[0].unit, go, unitQueue[0].builder);
-            Broodwar->sendText("all done!");
-        }
-       
-        
-    }else {
-        
-        
+      for (int i = 0; i < unitQueue.size(); i++) 
+      {
+          
+
+          if (unitQueue[i].builder == NULL)
+          {
+              unitQueue[i].builder = FindWorker(NULL);
+          }
+
+
+          
+          if (unitQueue[i].pos.isValid()  && !Broodwar->isVisible(unitQueue[i].pos)) {
+              unitQueue[i].builder->move(Position(unitQueue[i].pos));
+              
+          }
+          else if (!unitQueue[i].builder->isConstructing() && Broodwar->canMake(unitQueue[i].unit))
+          {
+
+              DoBuilding(unitQueue[i].unit, unitQueue[i].pos, unitQueue[i].builder);
+              //
+          }
+          else {
+              //Broodwar->sendText("building");
+          }
+      }
     }
-  // look at enemy stuff too
+  
    
 
   // Iterate through all the units that we own
@@ -304,16 +284,17 @@ void ExampleAIModule::onFrame()
       // If the unit is a worker unit
       if (u->getType().isWorker())
       {
-          if (u == baseBuilder) 
-          {
-              //Broodwar->sendText("done: %s", u->getTilePosition() == thing->Location() ? "true" : "false");
-              if (u->isIdle() )
-              {
-                  DoBuilding(UnitTypes::Terran_Command_Center, thing->Location(),baseBuilder);
-                  //Broodwar->sendText("done: %s", DoBuilding(UnitTypes::Terran_Command_Center, thing->Location())? "true":"false");
-                  baseBuilder = NULL;
-              }
-          }else if (u->isIdle())
+          //if (u == baseBuilder) 
+          //{
+          //    //Broodwar->sendText("done: %s", u->getTilePosition() == thing->Location() ? "true" : "false");
+          //    if (u->isIdle() )
+          //    {
+          //        DoBuilding(UnitTypes::Terran_Command_Center, thing->Location(),baseBuilder);
+          //        //Broodwar->sendText("done: %s", DoBuilding(UnitTypes::Terran_Command_Center, thing->Location())? "true":"false");
+          //        baseBuilder = NULL;
+          //    }
+          //}else 
+          if (u->isIdle())
           {
               // Order workers carrying a resource to return them to the center,
               // otherwise find a mineral patch to harvest.
@@ -332,10 +313,7 @@ void ExampleAIModule::onFrame()
 
               } // closure: has no powerup
           } // closure: if idle
-          if (u == workers[0]) 
-          {
-              //TilePositions::Unknown.x;
-          }
+          
           
 
       }
@@ -376,12 +354,16 @@ void ExampleAIModule::onFrame()
           }
       }
       else {
-          if (u->isIdle() && attacking)
+          if ( attacking) //checks if unit and if we should attack
           {
-              Unit enemy = u->getClosestUnit(Filter::IsEnemy);
-              if (enemy != NULL) {
-                  u->attack(enemy->getPosition());
+              if (u->isIdle()) {
+                  Unit enemy = u->getClosestUnit(Filter::IsEnemy);
+                  if (enemy != NULL) {
+                      u->attack(enemy->getPosition());
+                  }
               }
+          }
+          else {
           }
       }
   
@@ -562,7 +544,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
            
             if (unit->getType() == UnitTypes::Terran_Supply_Depot)
             {
-                predictSupply -= 8;
+                InternalResources::UpdateResource("supply", -8);
                 //Broodwar->sendText(" %d ", predictSupply);
             }
             if (unit->getType() == UnitTypes::Terran_Barracks) 
@@ -619,21 +601,29 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             }
         }else{
             
-            BuildQueue buildQueue(this); 
+           
             //Broodwar->sendText("this is the unit!!!!!!!!!!!!%s", unit->getType().c_str());
-            buildQueue.CheckBuild(unit,thing);
+            buildQueue->CheckBuild(unit,thing);
             
             if (unit->getType() == UnitTypes::Terran_SCV)
             {
-
-                workers[workerCount] = unit;
-                workerCount++;
+                workers.push_back(unit);
+                
             }
             else
             {
-                Position pos = { Broodwar->mapWidth() * 16,Broodwar->mapHeight() * 16 };
-                Position pos2 = { Broodwar->self()->getStartLocation().x * 32,Broodwar->self()->getStartLocation().y * 32 };
-                Position pos3 = { (pos.x + pos2.x) / 2,(pos.y + pos2.y) / 2 };
+               
+                // gets the chokepoints on the map from you to the enemy
+                Position pos3;
+                /*TilePosition a = Broodwar->self()->getStartLocation();
+                TilePosition b = Broodwar->enemy()->getStartLocation();
+                int length;
+                const CPPath& Path = theMap.GetPath(Position(a), Position(b), &length);
+                if (length > 0 && !Path.empty()) {
+                    pos3 = Position(Path[1]->Center());
+                }*/
+                CPPath thing = theMap.GetNearestArea(Broodwar->self()->getStartLocation())->ChokePoints();
+                pos3 = Position(thing[army.size() % thing.size()]->Center());
 
                 army.push_back(unit);
                 if (army.size() >= 25)

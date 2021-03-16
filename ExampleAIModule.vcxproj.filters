@@ -63,6 +63,9 @@
     <ClCompile Include="Source\UI.cpp">
       <Filter>Bobot bits</Filter>
     </ClCompile>
+    <ClCompile Include="internalResources.cpp">
+      <Filter>Bobot bits</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExampleAIModule.h" />
@@ -127,6 +130,9 @@
       <Filter>Bobot bits</Filter>
     </ClInclude>
     <ClInclude Include="Source\UI.h">
+      <Filter>Bobot bits</Filter>
+    </ClInclude>
+    <ClInclude Include="internalResources.h">
       <Filter>Bobot bits</Filter>
     </ClInclude>
   </ItemGroup>
