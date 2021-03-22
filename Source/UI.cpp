@@ -47,15 +47,25 @@ void UI::Display()
     //display list of building units
     for (int i = 0; i < bot->unitQueue.size(); i++)
     {
-        Broodwar->drawTextScreen(20, i * 10 + 60, "building %s isbuilder? %s pos? (%d,%d)",
+        Broodwar->drawTextScreen(20, i * 10 + 60, "building %s is valid: %s at: (%d,%d)",
             bot->unitQueue[i].unit.c_str(),
-            bot->unitQueue[i].builder != NULL ? "true" : "false",
+            bot->unitQueue[i].valid ? "true" : "false",
             bot->unitQueue[i].pos.x, bot->unitQueue[i].pos.y);
+
+        Broodwar->drawBoxMap(Position(bot->unitQueue[i].pos), Position(bot->unitQueue[i].pos+ UnitType(bot->unitQueue[i].unit).tileSize()), Colors::Teal);
        
     }
+    
+    for (int i=0; i< marked.size();i++)
+    {
+        Broodwar->drawTextMap(marked[i]->getPosition(), "%c marked %d", Text::Yellow, i);
+
+        
+    }
+
     // display tags for workers on refineries
     if (bot->ref.refinery) {
-        int i = 0;
+        int i=0;
         for (Unit w : bot->ref.refWorkers)
         {
             Broodwar->drawTextMap(w->getPosition(), "%c Invis %d", Text::Yellow, i);

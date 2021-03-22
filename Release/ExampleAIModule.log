@@ -1,18 +1,24 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
-  BuildQueue.cpp
   ExampleAIModule.cpp
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(149): warning C4101: 'e': unreferenced local variable
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(188): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(194): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(229): warning C4018: '<': signed/unsigned mismatch
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(209): warning C4101: 'nearestArea': unreferenced local variable
-C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(483): warning C4018: '<': signed/unsigned mismatch
+  UI.cpp
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(32): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\UI.cpp(48): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\UI.cpp(59): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(161): warning C4101: 'e': unreferenced local variable
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(200): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(206): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(241): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(221): warning C4101: 'nearestArea': unreferenced local variable
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(470): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(499): warning C4018: '<': signed/unsigned mismatch
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(526): warning C4018: '<': signed/unsigned mismatch
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
      Creating library Release\Bobot.lib and object Release\Bobot.exp
   Generating code
-  10 of 6167 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+C:\Users\william\BWAPI\Bobot\Source\ExampleAIModule.cpp(50): warning C4715: 'ExampleAIModule::FindWorker': not all control paths return a value
+  614 of 6168 functions (10.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    39 functions had inline decision re-evaluated but remain unchanged
+    19 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   ExampleAIModule.vcxproj -> C:\Users\william\BWAPI\Bobot\.\Release\Bobot.dll

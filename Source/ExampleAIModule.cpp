@@ -37,12 +37,11 @@ Unit ExampleAIModule::FindWorker(Unit caller)
         {
             
             //system("pause");
-            Unit worker = workers[i];
-            workers[i] = NULL;
-            //Broodwar->sendText("used workers %d", i );
-            
+            Unit tmp = workers[i];              //fake name
+            workers.erase(workers.begin() + i); // kills real name
+            workers.push_back(tmp);             //renames real name
 
-            return worker;
+            return tmp;
             
         }
     }
@@ -50,20 +49,33 @@ Unit ExampleAIModule::FindWorker(Unit caller)
     //return NULL;
 }
 
-bool ExampleAIModule::DoBuilding(UnitType building, TilePosition buildPosition,Unit worker )
+bool ExampleAIModule::DoBuilding(UnitType* building, TilePosition* buildPosition,Unit* worker )
 {
-    if (building.isAddon()) {
-        return worker->buildAddon(building);
+    if (building->isAddon()) {
+        return (*worker)->buildAddon(*building);
     }
-    if (worker == NULL) {
-        worker = FindWorker(NULL);
+    if (*worker == NULL) {
+        *worker = FindWorker(NULL);
     }
-    if (!buildPosition.isValid()) {
-        buildPosition = Broodwar->getBuildLocation(building, worker->getTilePosition());
+    if (!buildPosition->isValid()) {
+        *buildPosition = Broodwar->getBuildLocation(*building, (*worker)->getTilePosition());
+    }
+    if (!Broodwar->isVisible(*buildPosition)) {
+        (*worker)->move(Position(*buildPosition));
+        return true;
     }
 
     //Broodwar->sendText(" new %s", building.c_str());
-    return (worker->build(building, buildPosition));
+    if ((*worker)->build(*building, *buildPosition)) {
+        return true;
+    }
+    else {
+        ui->marked.push_back(*worker);
+        //Broodwar->sendText("%s", UI::marked.push_back(*worker));
+        Broodwar->setLocalSpeed(200);
+        return false;
+    }
+    
     
 }
 
@@ -226,31 +238,34 @@ void ExampleAIModule::onFrame()
   if (unitQueue.size() >= 1 && Broodwar->getFrameCount() % 10 == 0)
   {
       
-      for (int i = 0; i < unitQueue.size(); i++) 
+      for (int i = 0; i < unitQueue.size(); i++)
       {
-          
-
-          if (unitQueue[i].builder == NULL)
+          // if we can afford the building
+          if (unitQueue[i].valid == false && 
+              unitQueue[i].unit.mineralPrice() < InternalResources::GetResource("mineral") && 
+              unitQueue[i].unit.gasPrice() < InternalResources::GetResource("gas")  )
           {
-              unitQueue[i].builder = FindWorker(NULL);
+              continue;
+          }
+          else if(unitQueue[i].unit == false)
+          {
+              unitQueue[i].valid = true;
+              InternalResources::UpdateResource("mineral", unitQueue[i].unit.mineralPrice());
+              InternalResources::UpdateResource("gas", unitQueue[i].unit.gasPrice());
+             
           }
 
-
+         
           
-          if (unitQueue[i].pos.isValid()  && !Broodwar->isVisible(unitQueue[i].pos)) {
-              unitQueue[i].builder->move(Position(unitQueue[i].pos));
+          if (unitQueue[i].builder == NULL ||!unitQueue[i].builder->isConstructing() && Broodwar->canMake(unitQueue[i].unit) && !unitQueue[i].builder->isMoving())
+          {
               
+              DoBuilding(&unitQueue[i].unit, &unitQueue[i].pos, &unitQueue[i].builder);
+             
           }
-          else if (!unitQueue[i].builder->isConstructing() && Broodwar->canMake(unitQueue[i].unit))
-          {
-
-              DoBuilding(unitQueue[i].unit, unitQueue[i].pos, unitQueue[i].builder);
-              //
-          }
-          else {
-              //Broodwar->sendText("building");
-          }
+         
       }
+      
     }
   
    
@@ -452,10 +467,14 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
     if (unit->getPlayer() == Broodwar->self()) {
         
         if (unitQueue.size() > 0) {
-            if (unit->getType() == unitQueue[0].unit)
+            for (int i = 0; i < unitQueue.size(); i++)
             {
-                Broodwar->sendText(unit->getType().c_str());
-                unitQueue.erase(unitQueue.begin());
+                
+                if (unit->getTilePosition() == unitQueue[0].pos)
+                {
+                    Broodwar->sendText(unit->getType().c_str());
+                    unitQueue.erase(unitQueue.begin());
+                }
             }
         }
     }
@@ -484,7 +503,10 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
             army.erase(army.begin() + i);
         }
     }
-    
+    if (unit->getType() == UnitTypes::Terran_Supply_Depot) 
+    {
+        InternalResources::UpdateResource("supply", -8);
+    }
         
     try
     {
@@ -500,9 +522,11 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
 {
     if (unit->getPlayer() == Broodwar->self()) {
+        
+        for (int i = 0; i < unitQueue.size(); i++)
+        {
 
-        if (unitQueue.size() > 0) {
-            if (unit->getType() == unitQueue[0].unit)
+            if (unit->getTilePosition() == unitQueue[0].pos)
             {
                 Broodwar->sendText(unit->getType().c_str());
                 unitQueue.erase(unitQueue.begin());
@@ -578,15 +602,14 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
             if (unit->getType() == UnitTypes::Terran_Comsat_Station) { scanner = unit;}
             if (unit->getType() == UnitTypes::Terran_Factory)
             {
-                PreUnit machineShop;
+                PreUnit machineShop(UnitTypes::Terran_Machine_Shop);
                 machineShop.builder = unit;
-                machineShop.unit = UnitTypes::Terran_Machine_Shop;
                 unitQueue.push_back(machineShop);
                 //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }
             if ( unit->getType() == UnitTypes::Terran_Academy )
             {
-                PreUnit comsat;
+                PreUnit comsat(UnitTypes::Terran_Comsat_Station);
                 for (auto& u : Broodwar->self()->getUnits()) 
                 {
                     if (u->getType() == UnitTypes::Terran_Command_Center) 
@@ -595,7 +618,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
                         break;
                     }
                 }
-                comsat.unit = UnitTypes::Terran_Comsat_Station;
+                
                 unitQueue.push_back(comsat);
                 //unit->buildAddon(UnitTypes::Terran_Machine_Shop);
             }

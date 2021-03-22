@@ -11,9 +11,9 @@ public:
 	{
 		bot = bot1;
 	}
-	
-
-
 	void Display();
+
+	 std::vector<BWAPI::Unit> marked;
+
 
 };

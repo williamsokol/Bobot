@@ -35,7 +35,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
   BWAPI::Unit ExampleAIModule::FindWorker(BWAPI::Unit caller);
-  bool ExampleAIModule::DoBuilding(BWAPI::UnitType building, BWAPI::TilePosition = {}, BWAPI::Unit worker = NULL);
+  bool ExampleAIModule::DoBuilding(BWAPI::UnitType* building, BWAPI::TilePosition* = {}, BWAPI::Unit* worker = NULL);
   
   //virtual void Attack(BWAPI::Position pos, std::vector<BWAPI::Unit> squad);
 
@@ -51,7 +51,11 @@ public:
 	  BWAPI::UnitType unit;
 	  BWAPI::Unit builder = NULL;
 	  BWAPI::TilePosition pos = { -1,-1 };
-	  
+
+	  PreUnit(BWAPI::UnitType unit_) 
+	  {
+		  unit = unit_;
+	  }
 
   };
   
@@ -66,7 +70,7 @@ public:
   BWAPI::Unit baseBuilder;
   BWAPI::Unit scanner;
 
-  std::vector<Unit> workers;
+  std::vector<BWAPI::Unit> workers;
   
   BWAPI::TilePosition mainBase;
   Refinery ref;
